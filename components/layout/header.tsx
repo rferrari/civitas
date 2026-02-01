@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Building2, Users, Newspaper, Terminal } from 'lucide-react';
+import { Building2, Users, Newspaper, Terminal, LayoutDashboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: Building2 },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Cities', href: '/cities', icon: Building2 },
   { name: 'Agents', href: '/agents', icon: Users },
   { name: 'World News', href: '/news', icon: Newspaper },
@@ -28,8 +28,7 @@ export function Header() {
             </Link>
             <nav className="hidden md:flex items-center gap-1">
               {navigation.map((item) => {
-                const isActive = pathname === item.href ||
-                  (item.href !== '/' && pathname.startsWith(item.href));
+                const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
                 return (
                   <Link
                     key={item.name}

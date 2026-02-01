@@ -7,16 +7,38 @@ import { getAgentCount } from '@/lib/services/agents';
 import { getWorldEvents } from '@/lib/services/events';
 import { getRecentBeaconsCount } from '@/lib/services/beacons';
 import { getLatestReport } from '@/lib/services/reports';
+import {
+  getWorldCycleInfo,
+  getRealmResourceStats,
+  getDevelopmentFocusStats,
+  getAllianceCount
+} from '@/lib/services/world-cycles';
 import { CityCard } from '@/components/civitas/city-card';
 import { EventItem } from '@/components/civitas/event-item';
 import { DashboardStats } from '@/components/civitas/dashboard-stats';
 import { DashboardMap } from '@/components/civitas/dashboard-map';
+import { WorldCycleStatus } from '@/components/civitas/world-cycle-status';
+import { RealmResources } from '@/components/civitas/realm-resources';
+import { DevelopmentFocusChart } from '@/components/civitas/development-focus-chart';
+import { RealmOverviewPanel } from '@/components/civitas/realm-overview-panel';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 async function DashboardData() {
-  const [cities, stats, agentCount, events, beaconsLast24h, dailyReport, weeklyReport] = await Promise.all([
+  const [
+    cities,
+    stats,
+    agentCount,
+    events,
+    beaconsLast24h,
+    dailyReport,
+    weeklyReport,
+    cycleInfo,
+    resourceStats,
+    focusStats,
+    allianceCount
+  ] = await Promise.all([
     getCities(),
     getCityStats(),
     getAgentCount(),
@@ -24,13 +46,41 @@ async function DashboardData() {
     getRecentBeaconsCount(24),
     getLatestReport('DAILY'),
     getLatestReport('WEEKLY'),
+    getWorldCycleInfo(),
+    getRealmResourceStats(),
+    getDevelopmentFocusStats(),
+    getAllianceCount(),
   ]);
 
-  return { cities, stats, agentCount, events, beaconsLast24h, dailyReport, weeklyReport };
+  return {
+    cities,
+    stats,
+    agentCount,
+    events,
+    beaconsLast24h,
+    dailyReport,
+    weeklyReport,
+    cycleInfo,
+    resourceStats,
+    focusStats,
+    allianceCount,
+  };
 }
 
 export default async function DashboardPage() {
-  const { cities, stats, agentCount, events, beaconsLast24h, dailyReport, weeklyReport } = await DashboardData();
+  const {
+    cities,
+    stats,
+    agentCount,
+    events,
+    beaconsLast24h,
+    dailyReport,
+    weeklyReport,
+    cycleInfo,
+    resourceStats,
+    focusStats,
+    allianceCount,
+  } = await DashboardData();
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -54,17 +104,28 @@ export default async function DashboardPage() {
         beaconsLast24h={beaconsLast24h}
       />
 
-      <div className="mb-8 animate-fade-in-up opacity-0 stagger-2">
-        <div className="flex items-center gap-2 mb-4">
-          <Map className="w-5 h-5 text-muted-foreground" />
-          <h2 className="text-xl font-semibold">Realm Overview</h2>
+      <div className="grid gap-6 lg:grid-cols-3 mb-8 animate-fade-in-up opacity-0 stagger-2">
+        <WorldCycleStatus cycleInfo={cycleInfo} />
+        <RealmResources resources={resourceStats} />
+        <DevelopmentFocusChart focusStats={focusStats} />
+      </div>
+
+      <div className="grid gap-8 lg:grid-cols-3 mb-8">
+        <div className="lg:col-span-2 animate-fade-in-up opacity-0 stagger-3">
+          <div className="flex items-center gap-2 mb-4">
+            <Map className="w-5 h-5 text-muted-foreground" />
+            <h2 className="text-xl font-semibold">Realm Overview</h2>
+          </div>
+          <DashboardMap cities={cities} />
         </div>
-        <DashboardMap cities={cities} />
+        <div className="animate-fade-in-up opacity-0 stagger-3">
+          <RealmOverviewPanel stats={stats} allianceCount={allianceCount} />
+        </div>
       </div>
 
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-8">
-          <section className="animate-fade-in-up opacity-0 stagger-3">
+          <section className="animate-fade-in-up opacity-0 stagger-4">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Cities</h2>
               <Button variant="ghost" size="sm" asChild className="group">
@@ -82,7 +143,7 @@ export default async function DashboardPage() {
           </section>
 
           {(dailyReport || weeklyReport) && (
-            <section className="animate-fade-in-up opacity-0 stagger-4">
+            <section className="animate-fade-in-up opacity-0 stagger-5">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold">Latest Reports</h2>
                 <Button variant="ghost" size="sm" asChild className="group">
@@ -138,7 +199,7 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        <div className="animate-slide-in-right opacity-0 stagger-3">
+        <div className="animate-slide-in-right opacity-0 stagger-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Recent Events</h2>
             <Button variant="ghost" size="sm" asChild className="group">

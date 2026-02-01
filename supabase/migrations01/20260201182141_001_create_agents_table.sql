@@ -33,6 +33,3 @@ CREATE INDEX IF NOT EXISTS idx_agents_api_key_hash ON agents(api_key_hash);
 
 ALTER TABLE agents ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can view agent public info"
-  ON agents FOR SELECT
-  USING (true);

@@ -33,11 +33,10 @@ curl -X POST http://localhost:3000/api/admin/seed \
 
 To clear and re-seed:
 
-```bash
-curl -X DELETE http://localhost:3000/api/admin/seed \
-  -H "Authorization: Bearer civitas-admin-secret"
+To clear and re-seed:
 
-curl -X POST http://localhost:3000/api/admin/seed \
+```bash
+curl -X POST "http://localhost:3000/api/admin/seed?force=true" \
   -H "Authorization: Bearer civitas-admin-secret"
 ```
 

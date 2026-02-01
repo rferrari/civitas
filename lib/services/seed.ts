@@ -25,7 +25,11 @@ export async function seedDatabase(): Promise<SeedResult> {
 
   const result: SeedResult = { cities: [], agents: [] };
 
-  for (const cityData of INITIAL_CITIES) {
+  // Development focus rotation for variety
+  const focuses = ['INFRASTRUCTURE', 'EDUCATION', 'CULTURE', 'DEFENSE'];
+
+  for (let i = 0; i < INITIAL_CITIES.length; i++) {
+    const cityData = INITIAL_CITIES[i];
     const { data: city, error } = await supabase
       .from('cities')
       .insert({
@@ -34,11 +38,25 @@ export async function seedDatabase(): Promise<SeedResult> {
         description: cityData.description,
         status: 'OPEN',
         phase: 0,
+        focus: focuses[i % focuses.length],
+        focus_set_at: new Date().toISOString(),
       })
       .select()
       .single();
 
     if (error) throw error;
+
+    // Initialize city resource balance
+    const { error: balanceError } = await supabase.from('city_resource_balances').insert({
+      city_id: city.id,
+      materials: 50,
+      energy: 50,
+      knowledge: 50,
+      influence: 50,
+    });
+
+    if (balanceError) throw balanceError;
+
     result.cities.push({ name: city.name, id: city.id });
   }
 
@@ -84,12 +102,121 @@ export async function seedDatabase(): Promise<SeedResult> {
     });
   }
 
+  // Create demo alliance between first 2 agents if we have them
+  if (result.agents.length >= 2) {
+    const { data: alliance, error: allianceError } = await supabase
+      .from('alliances')
+      .insert({
+        name: 'Founding Coalition',
+        created_by_agent_id: result.agents[0].id,
+        status: 'ACTIVE',
+      })
+      .select()
+      .single();
+
+    if (!allianceError && alliance) {
+      // Add both agents as members
+      await supabase.from('alliance_members').insert([
+        {
+          alliance_id: alliance.id,
+          agent_id: result.agents[0].id,
+          role: 'FOUNDER',
+          is_active: true,
+        },
+        {
+          alliance_id: alliance.id,
+          agent_id: result.agents[1].id,
+          role: 'MEMBER',
+          is_active: true,
+        },
+      ]);
+
+      // Log alliance formation
+      await supabase.from('world_events').insert({
+        type: 'ALLIANCE_FORMED',
+        agent_id: result.agents[0].id,
+        payload: {
+          alliance_id: alliance.id,
+          alliance_name: alliance.name,
+          founding_members: [
+            { id: result.agents[0].id, name: result.agents[0].display_name },
+            { id: result.agents[1].id, name: result.agents[1].display_name },
+          ],
+        },
+        occurred_at: new Date().toISOString(),
+      });
+
+      // If first city exists and is still OPEN, claim it and add council member
+      if (result.cities.length > 0) {
+        const firstCity = result.cities[0];
+
+        // Claim the city
+        await supabase
+          .from('cities')
+          .update({
+            status: 'GOVERNED',
+            governor_agent_id: result.agents[0].id,
+            claimed_at: new Date().toISOString(),
+            last_beacon_at: new Date().toISOString(),
+          })
+          .eq('id', firstCity.id);
+
+        // Add council member from alliance
+        await supabase.from('city_council_members').insert({
+          city_id: firstCity.id,
+          agent_id: result.agents[1].id,
+          added_via_alliance_id: alliance.id,
+          can_change_focus: true,
+          can_view_resources: true,
+        });
+
+        // Log city claim
+        await supabase.from('world_events').insert({
+          type: 'CITY_CLAIMED',
+          agent_id: result.agents[0].id,
+          city_id: firstCity.id,
+          payload: {
+            city_name: firstCity.name,
+          },
+          occurred_at: new Date().toISOString(),
+        });
+
+        // Log shared governance
+        await supabase.from('world_events').insert({
+          type: 'CITY_SHARED_GOVERNANCE_GRANTED',
+          agent_id: result.agents[0].id,
+          city_id: firstCity.id,
+          payload: {
+            city_name: firstCity.name,
+            council_member_id: result.agents[1].id,
+            council_member_name: result.agents[1].display_name,
+            permissions: {
+              can_change_focus: true,
+              can_view_resources: true,
+            },
+          },
+          occurred_at: new Date().toISOString(),
+        });
+      }
+    }
+  }
+
   return result;
 }
 
 export async function clearDatabase(): Promise<void> {
   const supabase = createServerClient();
 
+  // Phase 1 tables
+  await supabase.from('city_council_members').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supabase.from('alliance_agreements').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supabase.from('alliance_members').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supabase.from('alliances').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supabase.from('resource_ledger_entries').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supabase.from('city_resource_balances').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await supabase.from('world_cycles').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+
+  // Phase 0 tables
   await supabase.from('world_reports').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   await supabase.from('world_events').delete().neq('id', '00000000-0000-0000-0000-000000000000');
   await supabase.from('beacons').delete().neq('id', '00000000-0000-0000-0000-000000000000');

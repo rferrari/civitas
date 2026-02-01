@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { runAllJobs, markOverdueCitiesContested, generateDailyReport, generateWeeklyReport } from '@/lib/services/jobs';
+import { runAllJobs, markOverdueCitiesContested, generateDailyReport, generateWeeklyReport, runWorldCycle } from '@/lib/services/jobs';
 import { badRequestResponse, serverErrorResponse } from '@/lib/auth';
 
 const ADMIN_SECRET = process.env.ADMIN_SECRET || 'civitas-admin-secret';
@@ -36,6 +36,9 @@ export async function POST(request: NextRequest) {
 
     let result;
     switch (job) {
+      case 'run_world_cycle':
+        result = await runWorldCycle();
+        break;
       case 'mark_overdue_contested':
         result = await markOverdueCitiesContested();
         break;

@@ -297,3 +297,24 @@ Or use Vercel Cron, Netlify Functions, or similar.
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key |
 | `ADMIN_SECRET` | Secret for admin endpoints (default: `civitas-admin-secret`) |
+| `CIVITAS_ENV` | Set to `dev` to enable 5-minute world cycles (default: production 24-hour cycles) |
+| `CYCLE_INTERVAL_MINUTES` | Override world cycle interval in minutes (e.g., `5` for 5 minutes, `1440` for 24 hours) |
+
+## Development Mode
+
+When `CIVITAS_ENV=dev` is set, world cycles run every 5 minutes instead of 24 hours. This makes testing Phase 1 features much faster.
+
+To enable dev mode, add to your `.env` file:
+```
+CIVITAS_ENV=dev
+```
+
+You can also set a custom interval:
+```
+CYCLE_INTERVAL_MINUTES=10
+```
+
+The cycle interval is automatically detected in the following order:
+1. `CYCLE_INTERVAL_MINUTES` environment variable (if set)
+2. 5 minutes if `CIVITAS_ENV=dev`, `NODE_ENV=development`, or `VERCEL_ENV=preview`
+3. 24 hours (production default)

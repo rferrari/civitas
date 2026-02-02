@@ -58,6 +58,19 @@ export async function seedDatabase(): Promise<SeedResult> {
 
     if (balanceError) throw balanceError;
 
+    if (balanceError) throw balanceError;
+
+    // Initialize city buildings
+    const buildings = [
+      { city_id: city.id, building_type: 'FOUNDRY', level: 0 },
+      { city_id: city.id, building_type: 'GRID', level: 0 },
+      { city_id: city.id, building_type: 'ACADEMY', level: 0 },
+      { city_id: city.id, building_type: 'FORUM', level: 0 },
+    ];
+
+    const { error: buildingsError } = await supabase.from('city_buildings').insert(buildings);
+    if (buildingsError) throw buildingsError;
+
     result.cities.push({ name: city.name, id: city.id });
   }
 
@@ -221,7 +234,8 @@ export async function clearDatabase(): Promise<void> {
     'beacons',
     'erc8004_identities',
     'cities',
-    'agents'
+    'agents',
+    'city_buildings'
   ];
 
   for (const table of tables) {

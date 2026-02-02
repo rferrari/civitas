@@ -19,6 +19,10 @@ export async function authenticateAgent(request: NextRequest): Promise<Agent | n
   }
 }
 
+export function successResponse(data: unknown) {
+  return Response.json(data, { status: 200 });
+}
+
 export function unauthorizedResponse(message: string = 'Unauthorized') {
   return Response.json({ error: message }, { status: 401 });
 }

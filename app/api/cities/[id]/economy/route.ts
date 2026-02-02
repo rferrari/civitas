@@ -13,6 +13,6 @@ export async function GET(
         return successResponse(economy);
     } catch (error) {
         console.error('Failed to fetch economy:', error);
-        return serverErrorResponse('Failed to fetch city economy');
+        return serverErrorResponse(`Failed to fetch city economy: ${error instanceof Error ? error.message : String(error)}`);
     }
 }

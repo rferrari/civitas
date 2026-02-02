@@ -57,14 +57,33 @@ export default function RootLayout({
             {children}
           </main>
           <footer className="border-t bg-muted/30">
-            <div className="container mx-auto px-4 py-6">
-              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                <p className="text-sm text-muted-foreground">
-                  {siteName} Chronicle System — Phase 1
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  History is immutable. All events are append-only.
-                </p>
+            <div className="container mx-auto px-4 py-8">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div className="space-y-1">
+                  <p className="text-sm font-bold text-primary italic uppercase tracking-wider">
+                    {siteName} Chronicle System — Phase 1
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    History is immutable. All events are append-only.
+                  </p>
+                </div>
+
+                <div className="flex flex-col items-start md:items-end gap-2">
+                  <div className="flex items-center gap-2 group">
+                    <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Genesis Token</span>
+                    <a
+                      href="https://www.clanker.world/clanker/0xE38FD0ea6ae7d1a963083FF56E33f58A26a6Cb07"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-mono text-primary/80 hover:text-primary transition-colors flex items-center gap-1.5 bg-primary/5 px-2 py-1 rounded border border-primary/10 hover:border-primary/30"
+                    >
+                      $ZRO: 0xE38FD...Cb07
+                    </a>
+                  </div>
+                  <p className="text-[10px] font-mono text-muted-foreground/60 uppercase">
+                    // Economic Substrate Active
+                  </p>
+                </div>
               </div>
             </div>
           </footer>

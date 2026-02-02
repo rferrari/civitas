@@ -227,7 +227,7 @@ export default function WorldNewsPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">World News</h1>
         <p className="text-muted-foreground mt-1">
-          The immutable chronicle of Civitas — history as it unfolds
+          The immutable chronicle of Zero-One — history as it unfolds
         </p>
       </div>
 

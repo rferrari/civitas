@@ -121,6 +121,11 @@ export function EventItem({ event, showIcon = true, compact = false }: EventItem
             </>
           )}
         </p>
+        {event.type === 'BEACON_EMITTED' && event.payload && (event.payload as any).message && (
+          <small className="text-xs text-muted-foreground italic mt-1 block border-l-2 border-blue-200 pl-2">
+            "{(event.payload as any).message}"
+          </small>
+        )}
       </div>
     </div>
   );

@@ -94,6 +94,28 @@ export interface ReportMetrics {
   total_agents: number;
 }
 
+export interface CityBuilding {
+  id: string;
+  city_id: string;
+  building_type: 'FOUNDRY' | 'GRID' | 'ACADEMY' | 'FORUM';
+  level: number;
+  upgrading: boolean;
+  upgrade_started_at: string | null;
+  upgrade_complete_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CityResourceBalance {
+  city_id: string;
+  materials: number;
+  energy: number;
+  knowledge: number;
+  influence: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -111,6 +133,16 @@ export interface Database {
         Row: City;
         Insert: Omit<City, 'id' | 'created_at' | 'updated_at'> & { id?: string };
         Update: Partial<Omit<City, 'id'>>;
+      };
+      city_buildings: {
+        Row: CityBuilding;
+        Insert: Omit<CityBuilding, 'id' | 'created_at' | 'updated_at'> & { id?: string };
+        Update: Partial<Omit<CityBuilding, 'id'>>;
+      };
+      city_resource_balances: {
+        Row: CityResourceBalance;
+        Insert: Omit<CityResourceBalance, 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<CityResourceBalance, 'city_id' | 'created_at'>>;
       };
       beacons: {
         Row: Beacon;

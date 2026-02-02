@@ -219,7 +219,7 @@ export async function getCityEconomy(cityId: string) {
   };
 }
 
-export async function setCityFocus(cityId: string, focus: string, agentId: string) {
+export async function setCityFocus(cityId: string, focus: string, agentId: string, reason: string = '') {
   const supabase = createServerClient();
   const FOCUS_CHANGE_COST_INFLUENCE = 50; // Simple cost
   const COOLDOWN_HOURS = 24;
@@ -292,7 +292,8 @@ export async function setCityFocus(cityId: string, focus: string, agentId: strin
     payload: {
       old_focus: city.focus,
       new_focus: focus,
-      cost: FOCUS_CHANGE_COST_INFLUENCE
+      cost: FOCUS_CHANGE_COST_INFLUENCE,
+      reason: reason || undefined
     },
     occurred_at: new Date().toISOString()
   });

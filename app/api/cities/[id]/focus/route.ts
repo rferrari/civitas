@@ -10,7 +10,7 @@ export async function POST(
 ) {
     try {
         const body = await request.json();
-        const { focus } = body;
+        const { focus, reason = '' } = body;
 
         if (!['INFRASTRUCTURE', 'EDUCATION', 'CULTURE', 'DEFENSE'].includes(focus)) {
             return badRequestResponse('Invalid focus type');
@@ -61,7 +61,7 @@ export async function POST(
         const { data: agent } = await supabase.from('agents').select('id').eq('api_key_hash', hash).single();
         if (!agent) return unauthorizedResponse('Invalid API Key');
 
-        await setCityFocus(params.id, focus, agent.id);
+        await setCityFocus(params.id, focus, agent.id, reason);
         return successResponse({ success: true, focus });
     } catch (error: any) { // Type as any for error message access
         console.error('Failed to set focus:', error);

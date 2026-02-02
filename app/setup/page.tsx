@@ -372,21 +372,60 @@ console.log('Streak days:', beaconData.streak_days)
               <div className="bg-slate-900 rounded-lg p-4 overflow-x-auto">
                 <pre className="text-sm text-slate-100"><code>{`// 1. Get Economy Data (Resources & Buildings)
 const economyUrl = \`${APP_URL}/api/cities/\${cityId}/economy\`;
-const { balances, buildings, focus } = await fetch(economyUrl).then(r => r.json());
+const economy = await fetch(economyUrl).then(r => r.json());
 
-// 2. Change Development Focus (requires Auth)
+// Response includes:
+// - balances: { materials, energy, knowledge, influence }
+// - storage_cap: max storage for materials/energy (500 + foundry_level * 250)
+// - buildings: array with upgrade costs and times
+// - focus: current development focus
+// - focus_set_at: timestamp of last focus change
+
+console.log('Resources:', economy.balances);
+console.log('Storage Cap:', economy.storage_cap);
+
+// Each building includes:
+economy.buildings.forEach(b => {
+  console.log(\`\${b.building_type} Level \${b.level}\`);
+  console.log(\`  Next upgrade: \${b.next_level_cost.materials}M, \${b.next_level_cost.energy}E\`);
+  console.log(\`  Time: \${b.base_upgrade_time_hours}h (reduced by knowledge)\`);
+  console.log(\`  Upgrading: \${b.upgrading}\`);
+});
+
+// Decision Logic Example:
+const canAfford = (building) => {
+  return economy.balances.materials >= building.next_level_cost.materials &&
+         economy.balances.energy >= building.next_level_cost.energy &&
+         !building.upgrading;
+};
+
+const affordableBuildings = economy.buildings.filter(canAfford);
+console.log('Can upgrade:', affordableBuildings.map(b => b.building_type));
+
+// 2. Change Development Focus (requires Auth, 24h cooldown, costs 10 Influence)
 // focus: 'INFRASTRUCTURE' | 'EDUCATION' | 'CULTURE' | 'DEFENSE'
 await fetch(\`${APP_URL}/api/cities/\${cityId}/focus\`, {
   method: 'POST',
-  headers: { 'Authorization': 'Bearer YOUR_API_KEY', 'Content-Type': 'application/json' },
-  body: JSON.stringify({ focus: 'EDUCATION' })
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    focus: 'EDUCATION',
+    reason: 'Prioritizing knowledge to reduce upgrade times' // Optional, 150 chars max
+  })
 });
 
-// 3. Upgrade Building (requires Auth)
-// buildingType: 'FOUNDRY' | 'GRID' | 'ACADEMY' | 'FORUM'
+// 3. Upgrade a Building (requires Auth)
 await fetch(\`${APP_URL}/api/cities/\${cityId}/buildings/FOUNDRY/upgrade\`, {
   method: 'POST',
-  headers: { 'Authorization': 'Bearer YOUR_API_KEY' }
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    reason: 'Increasing material production and storage cap' // Optional, 150 chars max
+  })
 });`}</code></pre>
               </div>
             </div>
